@@ -153,18 +153,18 @@ The synthetic set has 3,579 documents. The converter reads 3,579, converts 2,520
 
 The tests leave `ortsoc_dev` loaded with this synthetic data, which is what the smoke test below expects.
 
-## Deferred smoke test (not run: CPU and RAM are reserved for training)
+## Smoke test (run 2026-11-22: passed)
 
-The running `pidsmaker-pids` container mounts `~/PIDSMaker`, not this clone, so it cannot see the `ORTSOC_DEV` registration. There are two ways to run it. Neither has been tried.
+The running `pidsmaker-pids` container mounts `~/PIDSMaker`, not this clone, so it cannot see the `ORTSOC_DEV` registration. Option A below was run once no training job was active. Option B has not been tried.
 
-**Option A, a one-off container on this clone** (does not touch the live container or its artifacts). It uses the same image, network and DB settings as `compose-pidsmaker.yml`:
+**Option A, a one-off container on this clone** (does not touch the live container or its artifacts). It uses the same image, network and DB settings as `compose-pidsmaker.yml`. Do not pass `-u pids`: the image's `/entrypoint.sh` must start as root, remaps `pids` to the owner of the mounted clone, then drops to `pids` with `gosu`. With `-u pids` it fails with `failed switching to "pids": operation not permitted`.
 
 ```bash
 mkdir -p ~/PIDSMaker-dev/artifacts
 docker run --rm --network shared_network \
   -e DB_HOST=postgres -e DOCKER_PORT=5432 -e DB_USER=postgres -e DB_PASSWORD=postgres \
   -v ~/PIDSMaker-dev:/home/pids -v ~/PIDSMaker-dev/artifacts:/home/artifacts \
-  -u pids pidsmaker-pids \
+  pidsmaker-pids \
   bash -lc 'mkdir -p /home/pids/logs && cd /home/pids && python pidsmaker/main.py orthrus_non_snooped ORTSOC_DEV --cpu \
             --featurization.epochs=1 --training.num_epochs=1 2>&1 | tee /home/pids/logs/smoke_ortsoc_dev.log'
 ```
@@ -176,7 +176,19 @@ cd ~/PIDSMaker && docker compose -f compose-pidsmaker.yml exec -u pids pids bash
   'cd /home/pids && python pidsmaker/main.py orthrus_non_snooped ORTSOC_DEV --cpu --featurization.epochs=1 --training.num_epochs=1'
 ```
 
-What to look for: construction builds graphs for 2026-11-02..06; the log does not report "ground-truth UUIDs not present in the graph"; evaluation reports 14 ground-truth nodes; the run ends with "Run finished." The `--featurization.epochs` and `--training.num_epochs` overrides only shorten the run; drop them for a real one.
+The `--featurization.epochs` and `--training.num_epochs` overrides only shorten the run; drop them for a real one.
+
+**Result of Option A** (log: `logs/smoke_ortsoc_dev.log`, gitignored; artifacts in `artifacts/`, gitignored). Exit code 0 and "Run finished." after every stage: construction, transformation, featurization, feat_inference, batching, training, evaluation, triage. The container ran as `pids` and imported `pidsmaker` from the mounted clone.
+
+| Check | Result |
+|---|---|
+| Nodes read from `ortsoc_dev` | netflow 8, process 802, file 42 (matches the converter) |
+| Graphs built | one per day, 2026-11-02 to 2026-11-06, each spanning about 07:00 to 19:50 Pacific |
+| Split | train 3 graphs, val 1, test 1 |
+| Ground truth | "Total distinct malicious nodes across time windows: 14 / 14 ground-truth nodes"; no missing-UUID warning; 11/11 malicious event timestamps matched to test windows |
+| Evaluation (1 epoch, not meaningful) | 221 test nodes, TP 0, FP 0, FN 14, TN 207, AUC 0.32 |
+
+The detection numbers only show that evaluation runs. With one featurization epoch and one training epoch the model has learned nothing, and the synthetic data is too small and regular to evaluate Orthrus on.
 
 ## Open questions and limitations
 
@@ -189,4 +201,4 @@ What to look for: construction builds graphs for 2026-11-02..06; the log does no
 7. **Memory.** The converter holds all nodes and edges in memory, which is fine for dev-sized data. Multi-day real exports may need a streaming two-pass version.
 8. **Exec semantics.** Each Elastic `exec` event is treated as a new process (new `entity_id`) cloned from `process.parent`. If ORTSOC data shows `exec` reusing the `entity_id` of the forked child, the subject node keeps the pre-exec image as its `path`.
 9. **Host in the answer key** is not used for matching, because `entity_id` is globally unique. It is only documentation.
-10. **Not verified end to end in PIDSMaker.** The registration and ground truth have only been checked by the tests above (config keys, file format, uuid-to-index mapping). The smoke test above is the first time PIDSMaker itself reads `ortsoc_dev`.
+10. **Only smoke-tested in PIDSMaker.** The Orthrus pipeline runs end to end on `ortsoc_dev` and finds all 14 ground-truth nodes. Other models (Kairos, MAGIC) and full-length training have not been run on it.
