@@ -477,6 +477,9 @@ DARPA_TC_DATASETS = {
     "TRACE_E3",
     "FIVEDIRECTIONS_E5",
     "FIVEDIRECTIONS_E3",
+    # Elastic Defend data converted to the DARPA TC schema and operation names
+    # by dataset_preprocessing/elastic_ecs/create_database_ecs.py.
+    "ORTSOC_DEV",
 }
 OPTC_DATASETS = {"optc_h201", "optc_h501", "optc_h051"}
 ATLASv2_DATASETS = {"atlasv2_h1"}

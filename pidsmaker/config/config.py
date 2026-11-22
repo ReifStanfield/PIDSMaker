@@ -126,6 +126,29 @@ DATASET_DEFAULT_CONFIG = {
             ["E3-CADETS/node_Nginx_Backdoor_13.csv", "2018-04-13 09:03:00", "2018-04-13 09:16:00"],
         ],
     },
+    # ORTSOC (Oregon State student SOC) Elastic Defend data converted with
+    # dataset_preprocessing/elastic_ecs/create_database_ecs.py. Currently the
+    # synthetic dev set from tests/fixtures/make_synthetic_ecs.py.
+    "ORTSOC_DEV": {
+        "raw_dir": "",
+        "database": "ortsoc_dev",
+        "database_all_file": "ortsoc_dev",
+        "num_node_types": 3,
+        "num_edge_types": 10,  # rel2id_darpa_tc; the converter only emits these
+        "timezone": "US/Pacific",
+        "start_date": "2026-11-02",
+        "end_date": "2026-11-07",
+        "train_dates": ["2026-11-02", "2026-11-03", "2026-11-04"],
+        "val_dates": ["2026-11-05"],
+        "test_dates": ["2026-11-06"],
+        "unused_dates": [],
+        "ground_truth_relative_path": [
+            "ORTSOC-DEV/node_curl_dropper.csv",
+        ],
+        "attack_to_time_window": [
+            ["ORTSOC-DEV/node_curl_dropper.csv", "2026-11-06 14:05:00", "2026-11-06 14:20:00"],
+        ],
+    },
     "CLEARSCOPE_E5": {
         "raw_dir": "",
         "database": "clearscope_e5",

